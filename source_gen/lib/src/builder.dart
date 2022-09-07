@@ -326,6 +326,7 @@ class LibraryBuilder extends _Builder {
           [generator],
           formatOutput: formatOutput,
           generatedExtension: generatedExtension,
+          inputExtension: inputExtension,
           additionalOutputExtensions: additionalOutputExtensions,
           header: header,
           allowSyntaxErrors: allowSyntaxErrors,
