@@ -45,14 +45,15 @@ class _Builder extends Builder {
     this._generators, {
     String Function(String code)? formatOutput,
     String generatedExtension = '.g.dart',
+    String inputExtension = '.dart',
     List<String> additionalOutputExtensions = const [],
     String? header,
     this.allowSyntaxErrors = false,
     BuilderOptions? options,
   })  : _generatedExtension = generatedExtension,
-        buildExtensions = validatedBuildExtensionsFrom(
-            options != null ? Map.of(options.config) : null, {
-          '.dart': [
+        buildExtensions =
+            validatedBuildExtensionsFrom(options != null ? Map.of(options.config) : null, {
+          inputExtension: [
             generatedExtension,
             ...additionalOutputExtensions,
           ]
@@ -103,8 +104,7 @@ class _Builder extends Builder {
     LibraryElement library,
     BuildStep buildStep,
   ) async {
-    final generatedOutputs =
-        await _generate(library, _generators, buildStep).toList();
+    final generatedOutputs = await _generate(library, _generators, buildStep).toList();
 
     // Don't output useless files.
     //
@@ -130,10 +130,8 @@ class _Builder extends Builder {
           ..writeln('part of $name;');
         final part = computePartUrl(buildStep.inputId, outputId);
 
-        final libraryUnit =
-            await buildStep.resolver.compilationUnitFor(buildStep.inputId);
-        final hasLibraryPartDirectiveWithOutputUri =
-            hasExpectedPartDirective(libraryUnit, part);
+        final libraryUnit = await buildStep.resolver.compilationUnitFor(buildStep.inputId);
+        final hasLibraryPartDirectiveWithOutputUri = hasExpectedPartDirective(libraryUnit, part);
         if (!hasLibraryPartDirectiveWithOutputUri) {
           // TODO: Upgrade to error in a future breaking change?
           log.warning(
@@ -154,8 +152,7 @@ class _Builder extends Builder {
         ..writeln()
         ..writeln(_headerLine)
         ..writeAll(
-          LineSplitter.split(item.generatorDescription)
-              .map((line) => '// $line\n'),
+          LineSplitter.split(item.generatorDescription).map((line) => '// $line\n'),
         )
         ..writeln(_headerLine)
         ..writeln()
@@ -184,8 +181,7 @@ source formatter.''',
   }
 
   @override
-  String toString() =>
-      'Generating $_generatedExtension: ${_generators.join(', ')}';
+  String toString() => 'Generating $_generatedExtension: ${_generators.join(', ')}';
 }
 
 /// A [Builder] which generates content intended for `part of` files.
@@ -321,6 +317,7 @@ class LibraryBuilder extends _Builder {
     Generator generator, {
     String Function(String code)? formatOutput,
     String generatedExtension = '.g.dart',
+    String inputExtension = '.dart',
     List<String> additionalOutputExtensions = const [],
     String? header,
     bool allowSyntaxErrors = false,
@@ -403,7 +400,5 @@ final _partIdRegExp = RegExp('^$partIdRegExpLiteral\$');
 
 String languageOverrideForLibrary(LibraryElement library) {
   final override = library.languageVersion.override;
-  return override == null
-      ? ''
-      : '// @dart=${override.major}.${override.minor}\n';
+  return override == null ? '' : '// @dart=${override.major}.${override.minor}\n';
 }
